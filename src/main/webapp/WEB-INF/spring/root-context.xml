@@ -36,4 +36,21 @@
   <mybatis-spring:scan base-package="com.spring.javawebS.dao"/>
 		
 		
+	<!-- 메일 서비스(SMTP)에 필요한 환경설정(gmail.com) -->	
+	<bean class="org.springframework.mail.javamail.JavaMailSenderImpl" id="mailSender">
+		<property value="smtp.gmail.com" name="host"/>
+		<property value="587" name="port"/>
+		<property value="baik56341@gmail.com" name="username"/>
+		<property value="xgivchfqbaoxdhxf" name="password"/>
+		<property name="javaMailProperties">
+			<props>
+				<prop key="mail.transport.protocol">smtp</prop>
+				<prop key="mail.smtp.starttls.enable">true</prop>
+				<prop key="mail.debug">true</prop>
+				<prop key="mail.smtp.ssl.trust">smtp.gmail.com</prop>
+				<prop key="mail.smtp.ssl.protocols">TLSv1.2</prop>
+			</props>
+		</property>
+	</bean>
+		
 </beans>

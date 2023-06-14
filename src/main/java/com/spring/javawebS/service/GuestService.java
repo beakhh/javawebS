@@ -4,7 +4,6 @@ import java.util.List;
 
 import com.spring.javawebS.vo.GuestVO;
 
-
 public interface GuestService {
 
 	public List<GuestVO> getGuestList(int startIndexNo, int pageSize);
@@ -14,6 +13,7 @@ public interface GuestService {
 	public int getAdminCheck(String mid, String pwd);
 
 	public int totRecCnt();
-	
-	
+
+	public int setGuestDelete(int idx);
+
 }

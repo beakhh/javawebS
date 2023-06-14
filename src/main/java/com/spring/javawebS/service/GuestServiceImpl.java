@@ -16,27 +16,30 @@ public class GuestServiceImpl implements GuestService {
 
 	@Override
 	public List<GuestVO> getGuestList(int startIndexNo, int pageSize) {
-		
 		return guestDAO.getGuestList(startIndexNo, pageSize);
 	}
 
 	@Override
 	public int setGuestInput(GuestVO vo) {
-		
 		return guestDAO.setGuestInput(vo);
 	}
 
 	@Override
 	public int getAdminCheck(String mid, String pwd) {
 		int res = 0;
-		if(mid.equals("admin")& pwd.equals("1234")) res = 1;
+		if(mid.equals("admin") && pwd.equals("1234")) res = 1;
 		return res;
 	}
 
 	@Override
 	public int totRecCnt() {
-		
 		return guestDAO.totRecCnt();
 	}
+
+	@Override
+	public int setGuestDelete(int idx) {
+		return guestDAO.setGuestDelete(idx);
+	}
+	
 	
 }

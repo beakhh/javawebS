@@ -7,7 +7,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>guestInput.jsp</title>
-  <jsp:include page="/WEB-INF/views/include/bs4.jsp" />
+	<jsp:include page="/WEB-INF/views/include/bs4.jsp" />
 </head>
 <body>
 <jsp:include page="/WEB-INF/views/include/nav.jsp" />
@@ -15,7 +15,7 @@
 <p><br/></p>
 <div class="container">
   <h2 class="text-center">방명록 글올리기</h2>
-  <form name="myform" method="post"class="was-validated">
+  <form name="myform" method="post" class="was-validated">
     <div class="form-group">
       <label for="name">성명</label>
       <input type="text" class="form-control" id="name" value="${sMid}" placeholder="Enter username" name="name" required />
