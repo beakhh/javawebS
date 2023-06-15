@@ -1,9 +1,17 @@
 package com.spring.javawebS.service;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.UUID;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.spring.javawebS.dao.StudyDAO;
 import com.spring.javawebS.vo.MemberVO;
@@ -146,6 +154,43 @@ public class StudyServiceImpl implements StudyService {
 	public ArrayList<MemberVO> getMemberMidSearch2(String name) {
 		return studyDAO.getMemberMidSearch2(name);
 	}
+
+
+	
+	// 싱글파일 업로드
+	@Override
+	public int fileUpload(MultipartFile fName, String mid) {
+		int res = 0;
+		
+		UUID uid = UUID.randomUUID();
+		String oFileName = fName.getOriginalFilename(); // 파일명하고 확장자도 
+		String saveFileName = mid +"_"+ uid +"_"+ oFileName;
+//		System.out.println("oFileName : " + oFileName);
+		
+//		메모리에 올라와 있는 파일의 정보를 실제 서버 파일시스템에 저장처리한다.
+		try {
+			writeFile(fName, saveFileName); 
+			res = 1;
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		return res;
+	}
+
+	public void writeFile(MultipartFile fName, String saveFileName) throws IOException {
+		byte[] data = fName.getBytes();
+//		String realPath = request.getRealPath("/resources/data/study/"); 마지막에 "/" 필요 이유는  FileOutputStream fos = new FileOutputStream(realPath + oFileName); 에서 realPath + oFileName 사이에 "/" 필요하기 때문
+		
+		// request쓰려면 이거 꼭 써야함 여기서는
+		HttpServletRequest request = ((ServletRequestAttributes)RequestContextHolder.currentRequestAttributes()).getRequest();
+		
+		String realPath = request.getSession().getServletContext().getRealPath("/resources/data/study/");
+		
+		FileOutputStream fos = new FileOutputStream(realPath + saveFileName);
+		fos.write(data);
+		fos.close();
+	}
 	
 	
 	
@@ -156,3 +201,14 @@ public class StudyServiceImpl implements StudyService {
 	
 	
 }
+
+
+
+
+
+
+
+
+
+
+

@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.spring.javawebS.service.MemberService;
 import com.spring.javawebS.vo.MemberVO;	
@@ -111,7 +112,7 @@ public class MemberController {
 	}
 	
 	@RequestMapping(value = "/memberJoin", method = RequestMethod.POST)
-	public String memberJoinPost(MemberVO vo) {
+	public String memberJoinPost(MultipartFile fName ,MemberVO vo) {
 		// 아이디 중복 체크
 		if(memberService.getMemberIdCheck(vo.getMid()) != null) return "redirect:/message/idCheckNo";
 		if(memberService.getMemberNickCheck(vo.getNickName()) != null) return "redirect:/message/nickCheckNo";
@@ -119,10 +120,10 @@ public class MemberController {
 		// 비밀번호 암호화
 		vo.setPwd(passwordEncoder.encode(vo.getPwd()));
 		
-		// 사진파일이 업로드되었으면 사진파일을 서버 파일시스템에 저장시켜준다.
+		// 사진파일이 업로드되었으면 사진파일을 서버 파일시스템에 저장시켜준다. (서비스객체에서 수행처리한다.)
 		
 		// 체크가 완료되면 vo에 담긴 자료를 DB에 저장시켜준다.(회원가입)
-		int res = memberService.setMemberJoinOk(vo);
+		int res = memberService.setMemberJoinOk( fName, vo);
 		
 		if(res == 1) return "redirect:/message/memberJoinOk";
 		else return "redirect:/message/memberJoinNo";
@@ -149,7 +150,12 @@ public class MemberController {
 	}
 	
 	@RequestMapping(value = "/memberMain", method = RequestMethod.GET)
-	public String memberMainGet() {
+	public String memberMainGet(Model model, HttpSession session) {
+		String mid = (String) session.getAttribute("sMid");
+		MemberVO vo = memberService.getMemberIdCheck(mid);
+		
+		model.addAttribute("vo", vo);
+		
 		return "member/memberMain";
 	}
 	
@@ -268,10 +274,71 @@ public class MemberController {
 		}
 	}
 	
+	@RequestMapping(value = "/memberPwdCheck", method = RequestMethod.GET)
+	public String memberPwdCheckGet() {
+		return "member/memberPwdCheck";
+	}
+	
+	@RequestMapping(value = "/memberPwdCheck", method = RequestMethod.POST)
+	public String memberPwdCheckPost(String mid, String pwd, Model model) {
+		MemberVO vo = memberService.getMemberIdCheck(mid);
+		if(vo != null &&  passwordEncoder.matches(pwd, vo.getPwd())) {
+			model.addAttribute("vo",vo);
+			return "member/memberUpdate";
+		}
+		
+		return "redirect:/message/memberPwdCheckNo";
+	}
+	
+	@RequestMapping(value = "/memberUpdate", method = RequestMethod.GET)
+	public String memberUpdateGet(Model model, HttpSession session) {
+		String mid = (String) session.getAttribute("sMid");
+		MemberVO vo = memberService.getMemberIdCheck(mid);
+		model.addAttribute("vo", vo);
+		
+		return "member/memberUpdate";
+	}
+	
+	@RequestMapping(value = "/memberUpdateOk", method = RequestMethod.POST)
+	public String memberUpdateOkPost(MemberVO vo, MultipartFile fName, HttpSession session) {
+		// 닉네임 체크
+		String nickName = (String) session.getAttribute("sNickName");
+		if(memberService.getMemberNickCheck(vo.getNickName()) != null && !nickName.equals(vo.getNickName())) {
+			return "redirect:/message/memberNickCheckNo";
+		}
+		
+		int res = memberService.setMemberUpdateOk(fName, vo);
+		
+		if(res == 1) {
+			session.setAttribute("sNickName", vo.getNickName());
+			return "redirect:/message/memberUpdateOk";
+		}
+		else {
+			return "redirect:/message/memberUpdateNo";
+		}
+	}
+		
+//회원 탈퇴처리(userDel = 'OK')
+	@RequestMapping(value = "/memberDelete", method = RequestMethod.GET)
+	public String memberDelete(HttpSession session, Model model) {
+		String mid = (String) session.getAttribute("sMid");
+		memberService.setMemberDeleteOk(mid);
+		
+		session.invalidate();
+		
+		model.addAttribute("mid", mid);
+		
+		return "redirect:/message/memberDeleteOk";
+	}
+
+	
 }
-
-
-
+	
+	
+	
+	
+	
+	
 
 
 

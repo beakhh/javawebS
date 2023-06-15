@@ -1,5 +1,8 @@
 package com.spring.javawebS;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.util.ArrayList;
@@ -8,7 +11,9 @@ import java.util.UUID;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
@@ -19,7 +24,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.spring.javawebS.common.ARIAUtil;
 import com.spring.javawebS.common.SecurityUtil;
@@ -31,7 +38,7 @@ import com.spring.javawebS.vo.MemberVO;
 @Controller
 @RequestMapping("/study")
 public class StudyController {
-
+	
 	@Autowired
 	StudyService studyService;
 	
@@ -304,4 +311,116 @@ public class StudyController {
 		
 		return studyService.getMemberMidSearch2(name);
 	}
+	
+	/*
+	//파일 업로드 폼
+	@RequestMapping(value = "/fileUpload/fileUploadForm", method = RequestMethod.GET)
+	public String fileUploadGet() {
+		return "study/fileUpload/fileUploadForm";
+	}
+	*/
+	
+	//파일 업로드 폼 2
+	@RequestMapping(value = "/fileUpload/fileUploadForm", method = RequestMethod.GET)
+	public String fileUploadGet(HttpServletRequest request, Model model) {
+		String realPath = request.getSession().getServletContext().getRealPath("/resources/data/study"); // 반복문 할거라 study 뒤에 "/" 뺌
+		
+		String[] files = new File(realPath).list(); // .list() 를 사용했기 때문에 realPath의 study를 파일로 봄, 이걸 안 쓰면 파일을 계속 만듬
+		
+		/* 
+		파일이 잘 들어오는 지 확인
+		for(String file : files) {
+			System.out.println("file : " + file);
+		}
+		*/
+		
+		model.addAttribute("files",files);
+		model.addAttribute("fileCount",files.length); // files는 일반배열이라 length사용 size가 아니라
+		
+		return "study/fileUpload/fileUploadForm";
+	}
+	
+	@RequestMapping(value = "/fileUpload/fileUploadForm", method = RequestMethod.POST)
+	public String fileUploadPost(MultipartFile fName, String mid) {
+//		System.out.println("fName : " +  fName);
+//		System.out.println("mid : " +  mid);
+		
+		
+		int res = studyService.fileUpload(fName, mid); 
+		
+		
+		if(res == 1) return "redirect:/message/fileUploadOk";
+		else return "redirect:/message/fileUploadNo";
+	}
+	
+	// 파일삭제처리
+	
+	@ResponseBody
+	@RequestMapping(value = "/fileUpload/fileDelete", method = RequestMethod.POST )
+	public String fileDeletePost(
+			@RequestParam(name="file", defaultValue = "", required = false) String fName,
+			HttpServletRequest request
+			) {
+		String res = "0";
+
+		String realPath = request.getSession().getServletContext().getRealPath("/resources/data/study/");
+		File file = new File(realPath + fName);
+		
+//		file.exists(); 파일이 있으면 참으로 반환되게 해 주는 코드
+		if(file.exists()) {
+			file.delete();
+			res="1";
+		}
+		return res ;
+	}
+	
+	// 파일 다운로드 메소드.....
+	@RequestMapping(value="/fileUpload/fileDownAction", method=RequestMethod.GET)
+	public void fileDownActionGet(HttpServletRequest request, HttpServletResponse response) throws IOException  {
+		String file = request.getParameter("file");
+		String realPath = request.getSession().getServletContext().getRealPath("/resources/data/study/");
+		
+		File downFile = new File(realPath + file);
+		
+		String downFileName = new String(file.getBytes("UTF-8"), "8859_1"); // 파일이름 한글화
+		response.setHeader("Content-Disposition", "attachment:filename=" + downFileName);
+		
+		FileInputStream fis = new FileInputStream(downFile);
+		ServletOutputStream sos = response.getOutputStream(); // 서버에서 클라이언트에게 보내기
+		
+		byte[] buffer = new byte[2048];
+		int data = 0;
+		while((data = fis.read(buffer, 0, buffer.length)) != -1) {
+			sos.write(buffer, 0, data);
+		}
+		sos.flush();
+		sos.close();
+		fis.close();
+		
+	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -115,6 +115,34 @@ public class MessageController {
 			model.addAttribute("msg", "찾고자 하는 정보가 없습니다.");
 			model.addAttribute("url", "/member/memberIdFind");
 		}
+		else if(msgFlag.equals("fileUploadOk")) {
+			model.addAttribute("msg", "파일이 업로드 되었습니다.");
+			model.addAttribute("url", "/study/fileUpload/fileUploadForm");
+		}
+		else if(msgFlag.equals("fileUploadNo")) {
+			model.addAttribute("msg", "파일이 업로드 실패~~");
+			model.addAttribute("url", "/study/fileUpload/fileUploadForm");
+		}
+		else if(msgFlag.equals("memberPwdCheckNo")) {
+			model.addAttribute("msg", "회원 정보를 확인하세요");
+			model.addAttribute("url", "/member/memberPwdCheck");
+		}
+		else if(msgFlag.equals("memberNickCheckNo")) {
+			model.addAttribute("msg", "닉네임을 확인하세요");
+			model.addAttribute("url", "/member/memberPwdCheck");
+		}
+		else if(msgFlag.equals("memberUpdateOk")) {
+			model.addAttribute("msg", "회원정보가 수정되었습니다.");
+			model.addAttribute("url", "/member/memberMain");
+		}
+		else if(msgFlag.equals("memberUpdateNo")) {
+			model.addAttribute("msg", "회원정보가 수정되었습니다.");
+			model.addAttribute("url", "/member/memberUpdate");
+		}
+		else if(msgFlag.equals("memberDeleteOk")) {
+			model.addAttribute("msg", mid+"님 회원에서 탈퇴되었습니다.\\n같은 아이디로 1달이내 재가입 하실수 없습니다.");
+			model.addAttribute("url", "/member/memberLogin");
+		}
 		
 		
 		
