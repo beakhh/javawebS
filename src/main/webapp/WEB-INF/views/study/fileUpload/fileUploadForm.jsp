@@ -11,7 +11,7 @@
   <jsp:include page="/WEB-INF/views/include/bs4.jsp" />
   <script>
     'use strict';
-    let cnt = 1;
+    
     // 처음 로딩시 처리내용(다운로드 파일은 가려준다.)
     $(document).ready(function(){
     	$("#downloadFile").hide();
@@ -53,23 +53,6 @@
 			}
     }
     
-    
-    // 동적폼(파일 업로드 박스 추가하기)
-    function fileBoxAppend() {
-    	cnt++;
-    	let fileBox = '';
-    	fileBox += '<div id="fBox'+cnt+'">';
-    	fileBox += '<input type="file" name="fName'+cnt+'" id="file'+cnt+'" class="form-control-file border mb-2" style="float:left; width:85%;" />';
-    	fileBox += '<input type="button" value="삭제" onclick="deleteBox('+cnt+')" class="btn btn-danger form-control mb-2 ml-2" style="width:10%;" />';
-    	fileBox += '';
-    	fileBox += '</div>';
-    	$("#fileBoxAppend").append(fileBox);
-    }
-    
-    function deleteBox(cnt) {
-    	$("#fBox"+cnt).remove();
-    }
-    
     // 파일 삭제처리
     function fileDelete(file) {
     	let ans = confirm("선택한 파일을 삭제하시겠습니까?");
@@ -93,8 +76,6 @@
     		}
     	});
     }
-    
-
   </script>
 </head>
 <body>
@@ -108,16 +89,14 @@
       <input type="text" name="mid" value="${sMid}" />
     </p>
     <p>파일명 :
-      <input type="file" name="fName" id="fName1" class="form-control-file border" accept=".jpg,.gif,.png,.zip,.ppt,.pptx,.hwp" />
-      <div id="fileBoxAppend"></div>
+      <input type="file" name="fName" id="fName" class="form-control-file border" accept=".jpg,.gif,.png,.zip,.ppt,.pptx,.hwp" />
     </p>
     <p>
       <input type="button" value="파일업로드" onclick="fCheck()" class="btn btn-success" />
-	    <input type="button" value="파일박스추가" onclick="fileBoxAppend()" class="btn btn-info"/>
       <input type="reset" value="다시선택" class="btn btn-warning" />
     </p>
   </form>
-  <hr/>	
+  <hr/>
   <input type="button" value="저장된파일보기" id="fileViewBtn" class="btn btn-info"/>
   <input type="button" value="저장된파일감추기" id="fileHideBtn" class="btn btn-secondary"/>
   <hr/>

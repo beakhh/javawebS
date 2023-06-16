@@ -13,16 +13,15 @@
   <select id="getMemberList" resultType="com.spring.javawebS.vo.MemberVO">
   	select * from member2 <if test="mid != ''"> where mid like concat('%',#{mid},'%') </if> order by idx desc limit #{startIndexNo},#{pageSize};
   </select>
-
-  <select id="getMemberName" resultType="com.spring.javawebS.vo.MemberVO">
-  	select * from member2 where name = #{name};
+  
+  <select id="totRecCnt" resultType="int">
+    select count(*) from member2 <if test="mid != ''"> where mid like concat('%',#{mid},'%') </if>;
   </select>
   
   
   
   <insert id="setMemberJoinOk">
-    insert into member2 values (default,#{vo.mid},#{vo.pwd},#{vo.nickName},#{vo.name},#{vo.gender},#{vo.birthday},#{vo.tel},#{vo.address},#{vo.email},
-    	#{vo.homePage},#{vo.job},#{vo.hobbys},#{vo.photo},#{vo.content},#{vo.userInfor},default,default,default,default,default,default,default);
+    insert into member2 values (default,#{vo.mid},#{vo.pwd},#{vo.nickName},#{vo.name},#{vo.gender},#{vo.birthday},#{vo.tel},#{vo.address},#{vo.email},#{vo.homePage},#{vo.job},#{vo.hobbys},#{vo.photo},#{vo.content},#{vo.userInfor},default,default,default,default,default,default,default);
   </insert>
   
   
@@ -32,23 +31,15 @@
   </update>
   
   <update id="setMemberPwdUpdate">
-  	update member2 set pwd = #{pwd} where mid = #{mid};
+    update member2 set pwd = #{pwd} where mid = #{mid};
   </update>
   
-	<update id="setMemberUpdateOk">
+  <update id="setMemberUpdateOk">
     update member2 set nickName=#{vo.nickName},name=#{vo.name},gender=#{vo.gender},birthday=#{vo.birthday},tel=#{vo.tel},address=#{vo.address},email=#{vo.email},homePage=#{vo.homePage},job=#{vo.job},hobby=#{vo.hobby},photo=#{vo.photo},content=#{vo.content},userInfor=#{vo.userInfor} where mid=#{vo.mid};
   </update>
-  
   
   <update id="setMemberDeleteOk">
     update member2 set userDel = 'OK' where mid = #{mid};
   </update>
-  
-  
-  
-  
-  
-  
-  
   
 </mapper>

@@ -12,15 +12,13 @@ public interface MemberService {
 
 	public MemberVO getMemberNickCheck(String nickName);
 
-	public int setMemberJoinOk( MultipartFile fName , MemberVO vo);
+	public int setMemberJoinOk(MultipartFile fName, MemberVO vo);
 
 	public void setMemberVisitProcess(MemberVO vo);
 
 	public ArrayList<MemberVO> getMemberList(int startIndexNo, int pageSize, String mid);
 
 	public void setMemberPwdUpdate(String mid, String pwd);
-
-	public MemberVO getMemberName(String name);
 
 	public int setMemberUpdateOk(MultipartFile fName, MemberVO vo);
 

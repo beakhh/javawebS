@@ -1,7 +1,6 @@
 package com.spring.javawebS.service;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.UUID;
@@ -20,7 +19,7 @@ import com.spring.javawebS.vo.MemberVO;
 
 @Service
 public class MemberServiceImpl implements MemberService {
-
+	
 	@Autowired
 	MemberDAO memberDAO;
 
@@ -36,12 +35,11 @@ public class MemberServiceImpl implements MemberService {
 
 	@Override
 	public int setMemberJoinOk(MultipartFile fName, MemberVO vo) {
-		// 업로드된 사진을 서버 파일시스템에 저장처리한다.
 		int res = 0;
 		
 		try {
 			String oFileName = fName.getOriginalFilename();
-		
+			
 			if(oFileName.equals("")) {
 				vo.setPhoto("noimage.jpg");
 			}
@@ -53,17 +51,15 @@ public class MemberServiceImpl implements MemberService {
 				jp.writeFile(fName, saveFileName, "member");
 				
 				vo.setPhoto(saveFileName);
-				}
-				res = memberDAO.setMemberJoinOk(vo);
-				res = 1;
-			} catch (IOException e) {
-				e.printStackTrace();
 			}
-		
+			memberDAO.setMemberJoinOk(vo);
+			res = 1;
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		return res;
 	}
 
-	
 	@Override
 	public void setMemberVisitProcess(MemberVO vo) {
 		memberDAO.setMemberVisitProcess(vo);
@@ -77,11 +73,6 @@ public class MemberServiceImpl implements MemberService {
 	@Override
 	public void setMemberPwdUpdate(String mid, String pwd) {
 		memberDAO.setMemberPwdUpdate(mid, pwd);
-	}
-
-	@Override
-	public MemberVO getMemberName(String name) {
-		return memberDAO.getMemberName(name);
 	}
 
 	@Override
@@ -118,4 +109,5 @@ public class MemberServiceImpl implements MemberService {
 	public void setMemberDeleteOk(String mid) {
 		memberDAO.setMemberDeleteOk(mid);
 	}
+	
 }
