@@ -13,6 +13,9 @@ public class MessageController {
 	@RequestMapping(value = "/message/{msgFlag}", method = RequestMethod.GET)
 	public String listGet(@PathVariable String msgFlag,
 			@RequestParam(name="mid", defaultValue = "", required=false) String mid,
+			@RequestParam(name="idx", defaultValue = "0", required=false) int idx,
+			@RequestParam(name="pag", defaultValue = "1", required=false) int pag,
+			@RequestParam(name="pageSize", defaultValue = "5", required=false) int pageSize,
 			Model model) {
 		
 		if(msgFlag.equals("guestInputOk")) {
@@ -80,23 +83,23 @@ public class MessageController {
 			model.addAttribute("url", "/member/memberLogin");
 		}
 		else if(msgFlag.equals("adminNo")) {
-			model.addAttribute("msg", "관리자만 사용가능합니다.");
+			model.addAttribute("msg", "관리자가 아니시군요. 확인해 보세요.");
 			model.addAttribute("url", "/");
 		}
 		else if(msgFlag.equals("memberNo")) {
-			model.addAttribute("msg", "회원만 사용가능합니다.");
+			model.addAttribute("msg", "로그인후 사용하세요.");
 			model.addAttribute("url", "/member/memberLogin");
 		}
 		else if(msgFlag.equals("levelCheckNo")) {
-			model.addAttribute("msg", "회원등급을 확인하세요.");
+			model.addAttribute("msg", "회원 등급을 확인하세요.");
 			model.addAttribute("url", "/member/memberMain");
 		}
 		else if(msgFlag.equals("memberIdCheckNo")) {
-			model.addAttribute("msg", "아이디를 확인하세요.");
+			model.addAttribute("msg", "회원아이디를 확인해 주세요.");
 			model.addAttribute("url", "/member/memberPwdFind");
 		}
 		else if(msgFlag.equals("memberEmailCheckNo")) {
-			model.addAttribute("msg", "이메일을 확인하세요.");
+			model.addAttribute("msg", "회원 메일주소를 확인해 주세요.");
 			model.addAttribute("url", "/member/memberPwdFind");
 		}
 		else if(msgFlag.equals("memberImsiPwdOk")) {
@@ -111,9 +114,13 @@ public class MessageController {
 			model.addAttribute("msg", "비밀번호가 변경되었습니다.");
 			model.addAttribute("url", "/member/memberMain");
 		}
-		else if(msgFlag.equals("memberSerchNo")) {
-			model.addAttribute("msg", "찾고자 하는 정보가 없습니다.");
-			model.addAttribute("url", "/member/memberIdFind");
+		else if(msgFlag.equals("memberPwdNewCheckNo")) {
+			model.addAttribute("msg", "기존비밀번호와 같습니다. 새로운 비밀번호를 입력하세요.");
+			model.addAttribute("url", "/member/memberPwdUpdate");
+		}
+		else if(msgFlag.equals("memberPwdNewCheckNo")) {
+			model.addAttribute("msg", "비밀번호 오류~ 기존 비밀번호 확인후 다시 새 비밀번호로 수정하세요.");
+			model.addAttribute("url", "/member/memberPwdUpdate");
 		}
 		else if(msgFlag.equals("fileUploadOk")) {
 			model.addAttribute("msg", "파일이 업로드 되었습니다.");
@@ -124,19 +131,19 @@ public class MessageController {
 			model.addAttribute("url", "/study/fileUpload/fileUploadForm");
 		}
 		else if(msgFlag.equals("memberPwdCheckNo")) {
-			model.addAttribute("msg", "회원 정보를 확인하세요");
+			model.addAttribute("msg", "회원 정보를 확인하세요.");
 			model.addAttribute("url", "/member/memberPwdCheck");
 		}
 		else if(msgFlag.equals("memberNickCheckNo")) {
-			model.addAttribute("msg", "닉네임을 확인하세요");
-			model.addAttribute("url", "/member/memberPwdCheck");
+			model.addAttribute("msg", "닉네임을 확인하세요.");
+			model.addAttribute("url", "/member/member");
 		}
 		else if(msgFlag.equals("memberUpdateOk")) {
-			model.addAttribute("msg", "회원정보가 수정되었습니다.");
+			model.addAttribute("msg", "회원 정보가 수정되었습니다.");
 			model.addAttribute("url", "/member/memberMain");
 		}
 		else if(msgFlag.equals("memberUpdateNo")) {
-			model.addAttribute("msg", "회원정보가 수정되었습니다.");
+			model.addAttribute("msg", "회원 정보가 수정 실패~~");
 			model.addAttribute("url", "/member/memberUpdate");
 		}
 		else if(msgFlag.equals("memberDeleteOk")) {
@@ -150,6 +157,22 @@ public class MessageController {
 		else if(msgFlag.equals("boardInputNo")) {
 			model.addAttribute("msg", "게시글 등록실패~~");
 			model.addAttribute("url", "/board/boardInput");
+		}
+		else if(msgFlag.equals("boardDeleteOk")) {
+			model.addAttribute("msg", "게시글이 삭제 되었습니다.");
+			model.addAttribute("url", "/board/boardList");
+		}
+		else if(msgFlag.equals("boardDeleteNo")) {
+			model.addAttribute("msg", "게시글이 삭제 실패~~");
+			model.addAttribute("url", "/board/boardContent?idx="+idx+"&pag="+pag+"&pageSize="+pageSize);
+		}
+		else if(msgFlag.equals("boardUpdateOk")) {
+			model.addAttribute("msg", "게시글이 수정되었습니다.");
+			model.addAttribute("url", "/board/boardList?pag="+pag+"&pageSize="+pageSize);
+		}
+		else if(msgFlag.equals("boardUpdateNo")) {
+			model.addAttribute("msg", "게시글이 수정 실패~~");
+			model.addAttribute("url", "/board/boardUpdate?idx="+idx+"&pag="+pag+"&pageSize="+pageSize);
 		}
 		
 		
