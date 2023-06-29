@@ -40,7 +40,6 @@
     				let str = '';
     				str += '<option value="">도시선택</option>';
     				for(let i=0; i<res.city.length; i++) {
-    					if(res.city[i] == null) break;
     					str += '<option>'+res.city[i]+'</option>';
     				}
     				$("#city").html(str);

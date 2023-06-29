@@ -11,23 +11,23 @@ public class Level1Interceptor extends HandlerInterceptorAdapter {
 	
 	@Override
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-		
 		HttpSession session = request.getSession();
-		int level = session.getAttribute("sLevel") == null ? 99 : (int) session.getAttribute("sLevel");
+		int level = session.getAttribute("sLevel")==null ? 99 : (int) session.getAttribute("sLevel");
 		
-		// 우수회원이상 
+		// 우수회원이상(정회원, 준회원, 비회원)
 		if(level > 1) {
 			RequestDispatcher dispatcher;
-			
-			if(level == 99) { // 비회원
+			if(level == 99) {	// 비회원
 				dispatcher = request.getRequestDispatcher("/message/memberNo");
 			}
-			else { // 정회원, 준회원
+			else {	// 정회원, 준회원
 				dispatcher = request.getRequestDispatcher("/message/levelCheckNo");
 			}
 			dispatcher.forward(request, response);
 			return false;
 		}
+		
 		return true;
 	}
+	
 }

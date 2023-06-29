@@ -1,5 +1,13 @@
 package com.spring.javawebS;
 
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics2D;
+import java.awt.GraphicsEnvironment;
+import java.awt.RenderingHints;
+import java.awt.font.FontRenderContext;
+import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -7,14 +15,18 @@ import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 
+import javax.imageio.ImageIO;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -22,6 +34,9 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -32,8 +47,11 @@ import com.spring.javawebS.common.ARIAUtil;
 import com.spring.javawebS.common.SecurityUtil;
 import com.spring.javawebS.service.MemberService;
 import com.spring.javawebS.service.StudyService;
+import com.spring.javawebS.vo.KakaoAddressVO;
 import com.spring.javawebS.vo.MailVO;
 import com.spring.javawebS.vo.MemberVO;
+import com.spring.javawebS.vo.QrCodeVO;
+import com.spring.javawebS.vo.UserVO;
 
 @Controller
 @RequestMapping("/study")
@@ -300,7 +318,6 @@ public class StudyController {
 	@ResponseBody
 	@RequestMapping(value = "/ajax/ajaxTest3_1", method = RequestMethod.POST)
 	public MemberVO ajaxTest3_1Post(String name) {
-		System.out.println("name: " + name);
 		return studyService.getMemberMidSearch(name);
 	}
 	
@@ -308,85 +325,75 @@ public class StudyController {
 	@ResponseBody
 	@RequestMapping(value = "/ajax/ajaxTest3_2", method = RequestMethod.POST)
 	public ArrayList<MemberVO> ajaxTest3_2Post(String name) {
-		
 		return studyService.getMemberMidSearch2(name);
 	}
 	
+	// 파일 업로드 폼
 	/*
-	//파일 업로드 폼
 	@RequestMapping(value = "/fileUpload/fileUploadForm", method = RequestMethod.GET)
 	public String fileUploadGet() {
 		return "study/fileUpload/fileUploadForm";
 	}
 	*/
-	
-	//파일 업로드 폼 2
 	@RequestMapping(value = "/fileUpload/fileUploadForm", method = RequestMethod.GET)
 	public String fileUploadGet(HttpServletRequest request, Model model) {
-		String realPath = request.getSession().getServletContext().getRealPath("/resources/data/study"); // 반복문 할거라 study 뒤에 "/" 뺌
+		String realPath = request.getSession().getServletContext().getRealPath("/resources/data/study");
 		
-		String[] files = new File(realPath).list(); // .list() 를 사용했기 때문에 realPath의 study를 파일로 봄, 이걸 안 쓰면 파일을 계속 만듬
+		String[] files = new File(realPath).list();
 		
-		/* 
-		파일이 잘 들어오는 지 확인
-		for(String file : files) {
-			System.out.println("file : " + file);
-		}
-		*/
+//		for(String file : files) {
+//			System.out.println("file : " + file);
+//		}
 		
-		model.addAttribute("files",files);
-		model.addAttribute("fileCount",files.length); // files는 일반배열이라 length사용 size가 아니라
+		model.addAttribute("files", files);
+		model.addAttribute("fileCount", files.length);		
 		
 		return "study/fileUpload/fileUploadForm";
 	}
 	
+	// 파일 업로드 처리
 	@RequestMapping(value = "/fileUpload/fileUploadForm", method = RequestMethod.POST)
 	public String fileUploadPost(MultipartFile fName, String mid) {
-//		System.out.println("fName : " +  fName);
-//		System.out.println("mid : " +  mid);
+//		System.out.println("fName : " + fName);
+//		System.out.println("mid : " + mid);
 		
-		
-		int res = studyService.fileUpload(fName, mid); 
-		
+		int res = studyService.fileUpload(fName, mid);
 		
 		if(res == 1) return "redirect:/message/fileUploadOk";
 		else return "redirect:/message/fileUploadNo";
 	}
 	
-	// 파일삭제처리
-	
+	// 파일 삭제처리
 	@ResponseBody
-	@RequestMapping(value = "/fileUpload/fileDelete", method = RequestMethod.POST )
+	@RequestMapping(value = "/fileUpload/fileDelete", method = RequestMethod.POST)
 	public String fileDeletePost(
-			@RequestParam(name="file", defaultValue = "", required = false) String fName,
-			HttpServletRequest request
-			) {
-		String res = "0";
-
+			@RequestParam(name="file", defaultValue = "", required=false) String fName,
+			HttpServletRequest request) {
 		String realPath = request.getSession().getServletContext().getRealPath("/resources/data/study/");
+		
+		String res = "0";
 		File file = new File(realPath + fName);
 		
-//		file.exists(); 파일이 있으면 참으로 반환되게 해 주는 코드
 		if(file.exists()) {
 			file.delete();
-			res="1";
+			res = "1";
 		}
-		return res ;
+		return res;
 	}
 	
 	// 파일 다운로드 메소드.....
 	@RequestMapping(value="/fileUpload/fileDownAction", method=RequestMethod.GET)
-	public void fileDownActionGet(HttpServletRequest request, HttpServletResponse response) throws IOException  {
+	public void fileDownActionGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		String file = request.getParameter("file");
 		String realPath = request.getSession().getServletContext().getRealPath("/resources/data/study/");
 		
 		File downFile = new File(realPath + file);
 		
-		String downFileName = new String(file.getBytes("UTF-8"), "8859_1"); // 파일이름 한글화
+		String downFileName = new String(file.getBytes("UTF-8"), "8859_1");
 		response.setHeader("Content-Disposition", "attachment:filename=" + downFileName);
 		
 		FileInputStream fis = new FileInputStream(downFile);
-		ServletOutputStream sos = response.getOutputStream(); // 서버에서 클라이언트에게 보내기
+		ServletOutputStream sos = response.getOutputStream();
 		
 		byte[] buffer = new byte[2048];
 		int data = 0;
@@ -397,30 +404,285 @@ public class StudyController {
 		sos.close();
 		fis.close();
 		
+		//return "study/fileUpload/fileUploadForm";
+	}
+	
+	// validator를 이용한 Backend 유효성 검사하기
+	@RequestMapping(value = "/validator/validatorForm", method = RequestMethod.GET)
+	public String validatorFormGet() {
+		return "study/validator/validatorForm";
+	}
+	
+	/*
+	// validator를 이용한 Backend 유효성 검사하기 - 자료 검사후 DB에 저장하기
+	@RequestMapping(value = "/validator/validatorForm", method = RequestMethod.POST)
+	public String validatorFormPost(UserVO vo) {
+		System.out.println("vo : " + vo);
+		
+		if(vo.getMid().equals("") || vo.getName().equals("") || vo.getMid().length() < 3 || vo.getAge() < 18) {
+			return "redirect:/message/userCheckNo";
+		}
+		
+		int res = studyService.setUserInput(vo);
+		if(res == 1) return "redirect:/message/userInputOk";
+		else return "redirect:/message/userInputNo";
+	}
+	*/	
+	// validator를 이용한 Backend 유효성 검사하기 - 자료 검사후 DB에 저장하기
+	@RequestMapping(value = "/validator/validatorForm", method = RequestMethod.POST)
+	public String validatorFormPost(Model model,
+			@Validated UserVO vo, BindingResult bindingResult			
+			) {
+		System.out.println("vo : " + vo);
+		
+		System.out.println("error : " + bindingResult.hasErrors());
+		
+		if(bindingResult.hasFieldErrors()) {	// bindingResult.hasFieldErrors() 결과값이 true가 나오면 오류가 있다는 것이다.
+			List<ObjectError> list = bindingResult.getAllErrors();
+			System.out.println("~~~~~~~~~~~~~~~~~~~~~~~");
+			
+			String temp = "";
+			for(ObjectError e : list) {
+				System.out.println("메세지 : " + e.getDefaultMessage());
+				temp = e.getDefaultMessage().substring(e.getDefaultMessage().indexOf("/")+1);
+				if(temp.equals("midEmpty") || temp.equals("midSizeNo") || temp.equals("nameEmpty") || temp.equals("nameSizeNo") || temp.equals("ageRangeNo")) break;
+			}
+			System.out.println("temp : " + temp);
+			System.out.println("~~~~~~~~~~~~~~~~~~~~~~~");
+			model.addAttribute("temp", temp);
+			return "redirect:/message/validatorError";
+		}
+		
+		int res = studyService.setUserInput(vo);
+		if(res == 1) return "redirect:/message/userInputOk";
+		else return "redirect:/message/userInputNo";
+	}
+	
+	// user리스트 보여주기
+	@RequestMapping(value = "/validator/validatorList", method = RequestMethod.GET)
+	public String validatorListGet(Model model) {
+		ArrayList<UserVO> vos = studyService.getUserList();
+		model.addAttribute("vos", vos);
+		
+		return "study/validator/validatorList";
+	}
+	
+	// user 삭제하기
+	@RequestMapping(value = "/validator/validatorDelete", method = RequestMethod.GET)
+	public String validatorDeleteGet(int idx) {
+		studyService.setUserDelete(idx);
+		
+		return "redirect:/message/validatorDeleteOk";
+	}
+	
+	// kakaomap Form 보기
+	@RequestMapping(value = "/kakaomap/kakaomap", method = RequestMethod.GET)
+	public String kakaomapGet() {
+		return "study/kakaomap/kakaomap";
+	}
+	
+	// kakaomap 클릭한 위치에 마커표시하기
+	@RequestMapping(value = "/kakaomap/kakaoEx1", method = RequestMethod.GET)
+	public String kakaoEx1Get() {
+		return "study/kakaomap/kakaoEx1";
+	}
+	
+	// kakaomap 클릭한 위치에 마커표시하기(DB저장)
+	@ResponseBody
+	@RequestMapping(value = "/kakaomap/kakaoEx1", method = RequestMethod.POST)
+	public String kakaoEx1Post(KakaoAddressVO vo) {
+		KakaoAddressVO searchVO = studyService.getKakaoAddressName(vo.getAddress());
+		if(searchVO != null) return "0";
+		studyService.setKakaoAddressInput(vo);
+		return "1";
+	}
+	
+	// kakaomap DB에 저장된 지명 검색하기
+	@RequestMapping(value = "/kakaomap/kakaoEx2", method = RequestMethod.GET)
+	public String kakaoEx2Get(Model model,
+			@RequestParam(name="address", defaultValue = "그린컴퓨터", required=false) String address) {
+		KakaoAddressVO vo = studyService.getKakaoAddressName(address);
+		List<KakaoAddressVO> vos = studyService.getKakaoAddressList();
+		
+		model.addAttribute("vo", vo);
+		model.addAttribute("vos", vos);
+		model.addAttribute("address", address);
+		
+		return "study/kakaomap/kakaoEx2";
+	}
+	
+	// kakaomap DB에 저장된 주소 삭제처리
+	@ResponseBody
+	@RequestMapping(value = "/kakaomap/kakaoAddressDelete", method = RequestMethod.POST)
+	public String kakaoAddressDeletePost(String address) {
+		studyService.setKakaoAddressDelete(address);
+		return "";
+	}
+	
+	// kakaomap Kakao데이터베이스에 들어있는 지명으로 검색하후 내DB에 저장하기
+	@RequestMapping(value = "/kakaomap/kakaoEx3", method = RequestMethod.GET)
+	public String kakaoEx3Get(Model model,
+			@RequestParam(name="address", defaultValue = "청주시청", required=false) String address) {
+		model.addAttribute("address", address);
+		return "study/kakaomap/kakaoEx3";
+	}
+	
+	// kakaomap 주변검색처리
+	@RequestMapping(value = "/kakaomap/kakaoEx4", method = RequestMethod.GET)
+	public String kakaoEx4Get(Model model,
+			@RequestParam(name="address", defaultValue = "청주시청", required=false) String address) {
+		model.addAttribute("address", address);
+		return "study/kakaomap/kakaoEx4";
+	}
+	
+	// QR코드 폼
+	@RequestMapping(value = "/qrCode/qrCodeForm", method = RequestMethod.GET)
+	public String qrcodeFormGet() {
+		return "study/qrCode/qrCodeForm";
+	}
+	
+	// QR코드 폼(개인정보등록)
+	@RequestMapping(value = "/qrCode/qrCodeEx1", method = RequestMethod.GET)
+	public String qrcodeEx1Get() {
+		return "study/qrCode/qrCodeEx1";
+	}
+	
+	// QR코드 폼(개인정보등록)
+	@ResponseBody
+	@RequestMapping(value = "/qrCode/qrCodeEx1", method = RequestMethod.POST, produces="application/text; charset=utf8")
+	public String qrcodeEx1Post(QrCodeVO vo, HttpServletRequest request) {
+		String realPath = request.getSession().getServletContext().getRealPath("/resources/data/qrCode/");
+		String qrCodeName = studyService.qrCreate(vo, realPath);
+		return qrCodeName;
+	}
+	
+	// QR코드 폼(정보 사이트 등록)
+	@RequestMapping(value = "/qrCode/qrCodeEx2", method = RequestMethod.GET)
+	public String qrcodeEx2Get() {
+		return "study/qrCode/qrCodeEx2";
+	}
+	
+	// QR코드 폼(정보 사이트 등록)
+	@ResponseBody
+	@RequestMapping(value = "/qrCode/qrCodeEx2", method = RequestMethod.POST, produces="application/text; charset=utf8")
+	public String qrcodeEx2Post(QrCodeVO vo, HttpServletRequest request) {
+		String realPath = request.getSession().getServletContext().getRealPath("/resources/data/qrCode/");
+		String qrCodeName = studyService.qrCreate2(vo, realPath);
+		return qrCodeName;
+	}
+	
+	// QR코드 폼(영화예매하기)
+	@RequestMapping(value = "/qrCode/qrCodeEx3", method = RequestMethod.GET)
+	public String qrcodeEx3Get() {
+		return "study/qrCode/qrCodeEx3";
+	}
+	
+	// QR코드 폼(영화예매하기)
+	@ResponseBody
+	@RequestMapping(value = "/qrCode/qrCodeEx3", method = RequestMethod.POST, produces="application/text; charset=utf8")
+	public String qrcodeEx3Post(QrCodeVO vo, HttpServletRequest request) {
+		String realPath = request.getSession().getServletContext().getRealPath("/resources/data/qrCode/");
+		String qrCodeName = studyService.qrCreate3(vo, realPath);
+		return qrCodeName;
+	}
+	
+	// QR코드 폼(영화예매하기) - DB저장/확인
+	@RequestMapping(value = "/qrCode/qrCodeEx4", method = RequestMethod.GET)
+	public String qrcodeEx4Get() {
+		return "study/qrCode/qrCodeEx4";
+	}
+	
+	// QR코드 폼(영화예매하기) - DB저장/확인
+	@ResponseBody
+	@RequestMapping(value = "/qrCode/qrCodeEx4", method = RequestMethod.POST, produces="application/text; charset=utf8")
+	public String qrcodeEx4Post(QrCodeVO vo, HttpServletRequest request) {
+		String realPath = request.getSession().getServletContext().getRealPath("/resources/data/qrCode/");
+		String qrCodeName = studyService.qrCreate4(vo, realPath);
+		return qrCodeName;
+	}
+	
+	// QR코드 폼(영화예매하기) - DB검색
+	/*
+	@ResponseBody
+	@RequestMapping(value = "/qrCode/qrCodeSearch", method = RequestMethod.POST, produces="application/text; charset=utf8")
+	public String qrCodeSearchPost(String qrCode) {
+		QrCodeVO vo = studyService.getQrCodeSearch(qrCode);
+		
+		String str = "";
+		str += "아이디 : " + vo.getMid()+ ",";
+		str += "성명 : " + vo.getName()+ ",";
+		str += "이메일 : " + vo.getEmail()+ ",";
+		str += "영화제목 : " + vo.getMovieName()+ ",";
+		str += "상영일자 : " + vo.getMovieDate()+ ",";
+		str += "상영시간 : " + vo.getMovieTime()+ ",";
+		str += "성인수 : " + vo.getMovieAdult()+ ",";
+		str += "어린이수 : " + vo.getMovieChild()+ ",";
+		str += "티켓구매일자 : " + vo.getPublishNow();
+		
+		return str;
+	}
+	*/
+	@ResponseBody
+	@RequestMapping(value = "/qrCode/qrCodeSearch", method = RequestMethod.POST)
+	public QrCodeVO qrCodeSearchPost(String qrCode) {
+		return studyService.getQrCodeSearch(qrCode);
+	}
+	
+	// 캡차 연습폼...
+	@RequestMapping(value = "/captcha/captchaForm", method = RequestMethod.GET)
+	public String captchaFormGet() {
+		return "study/captcha/captchaForm";
+	}
+	
+	// 캡차 이미지 생성하기(랜덤...)
+	@ResponseBody
+	@RequestMapping(value = "/captcha/captchaImage", method = RequestMethod.POST)
+	public String captchaImagePost(HttpServletRequest request, HttpServletResponse response) {
+		try {
+			// 알파벳과 숫자가 섞인 5글자 문자열을 랜덤하게 생성...
+			String randomString = RandomStringUtils.randomAlphanumeric(5);
+			System.out.println("randomString : " + randomString);
+			
+			// 랜덤하게 생성된 문자를 세션에 저장한다.
+		  request.getSession().setAttribute("CAPTCHA", randomString);
+		  
+		  // 시스템에 등록된 폰트들의 목록(이름)을 확인
+//		  Font[] fontList = GraphicsEnvironment.getLocalGraphicsEnvironment().getAllFonts();
+//		  for(Font f : fontList) {
+//		  	System.out.println(f.getName());
+//		  }
+		  Font font = new Font("Jokerman", Font.ITALIC, 30);
+		  FontRenderContext frc = new FontRenderContext(null, true, true);
+		  Rectangle2D bounds = font.getStringBounds(randomString, frc);
+		  int w = (int) bounds.getWidth();
+		  int h = (int) bounds.getHeight();
+		  
+		  // 이미지로 생성
+		  BufferedImage image = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+		  Graphics2D g = image.createGraphics();
+		  // g.setColor(Color.WHITE);
+		  g.fillRect(0, 0, w, h);
+		  g.setColor(new Color(0, 156, 240));
+		  g.setFont(font);
+		  g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+		  g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+		  g.drawString(randomString, (float)bounds.getX(), (float)-bounds.getY());
+		  g.dispose();
+		  
+		  String realPath = request.getSession().getServletContext().getRealPath("/resources/images/");
+		  ImageIO.write(image, "png", new File(realPath + "captcha.png"));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		return "study/captcha/captchaForm";
+	}
+	
+	// 캡차 비교
+	@ResponseBody
+	@RequestMapping(value = "/captcha/captchaForm", method = RequestMethod.POST)
+	public String captchaPost(HttpSession session, String strCaptcha) {
+		if(strCaptcha.equals(session.getAttribute("CAPTCHA").toString())) return "1";
+		else return "0";
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

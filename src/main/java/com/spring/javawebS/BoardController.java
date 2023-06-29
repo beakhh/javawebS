@@ -322,7 +322,7 @@ public class BoardController {
 		replyVO.setLevel(replyVO.getLevel()+1);
 		boardService.setBoardReplyInput(replyVO);
 		
-		return "1";
+		return "";
 	}
 	
 	// 댓글 삭제하기

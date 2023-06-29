@@ -3,7 +3,7 @@ package com.spring.javawebS.common;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-public  class SecurityUtil {
+public class SecurityUtil {
 	public static String encryptSHA256(String str){
     String sha = "";
     try{

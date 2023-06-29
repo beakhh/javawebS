@@ -34,7 +34,7 @@
 <jsp:include page="/WEB-INF/views/include/slide2.jsp" />
 <p><br/></p>
 <div class="container">
-  <h2>BCryptPasswordEncoder</h2>
+  <h2>BCryptPasswordEncoder 암호화</h2>
   <pre>
     - 스프링 시큐리티(Spring Security) 프레임워크에서 제공하는 클래스중 하나로 비밀번호를 암호화 하는데 사용한다.
       이것은 주로 자바 서버프로그램 개발을 위해 필요한 '인증'/'권한부여' 및 '보안기능'을 제공해주는 프레임워크에 속한다.
