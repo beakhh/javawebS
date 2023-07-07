@@ -91,6 +91,87 @@
   	select * from dbProduct where substring(productCode,4,3) = #{categorySubCode};  <!-- 상품코드 : A0100125 --> 
   </select>
   
+  <select id="getDbCartProductOptionSearch" resultType="com.spring.javawebS.vo.DbCartVO">
+  	select * from dbCart where productName=#{productName} and optionName=#{optionName} and mid=#{mid};
+  </select>
+  
+  <select id="getDbCartList" resultType="com.spring.javawebS.vo.DbCartVO">
+  	select * from dbCart where mid=#{mid} order by idx;
+  </select>
+  
+  <select id="getCartIdx" resultType="com.spring.javawebS.vo.DbCartVO">
+  	select * from dbCart where idx = #{idx};
+  </select>
+  
+  <select id="getOrderMaxIdx" resultType="com.spring.javawebS.vo.DbOrderVO">
+  	select max(idx) as maxIdx from dbOrder;
+  </select>
+  
+  <select id="getOrderBaesong" resultType="com.spring.javawebS.vo.DbBaesongVO">
+    select * from dbBaesong where orderIdx = #{orderIdx};
+  </select>
+  
+  <select id="getMyOrderList" resultType="com.spring.javawebS.vo.DbBaesongVO">
+    <if test='mid == "전체"'>
+      SELECT oder.*,baesong.* 
+      from dbOrder oder join dbBaesong baesong using(orderIdx) 
+      where date(orderDate) = substring(now(),1,10)
+      order by baesong.idx desc limit #{startIndexNo},#{pageSize};
+    </if>
+    <if test='mid != "전체"'>
+      SELECT oder.*,baesong.* 
+      from dbOrder oder join dbBaesong baesong using(orderIdx) 
+      where baesong.mid=#{mid} and date(orderDate) = substring(now(),1,10)
+      order by baesong.idx desc limit #{startIndexNo},#{pageSize};
+    </if>
+  </select>
+  
+  <select id="totRecCnt" resultType="int">
+    <if test='mid == "전체"'>
+      select count(*) from dbOrder
+      where date(orderDate) = substring(now(),1,10);
+    </if>
+    <if test='mid != "전체"'>
+      select count(baesong.idx) from dbOrder oder join dbBaesong baesong using(orderIdx), member2 member
+      where member.mid = #{mid} and date(orderDate) = substring(now(),1,10);
+    </if>
+  </select>
+  
+  <select id="totRecCntMyOrderStatus" resultType="int">
+    <if test="mid == '전체'">
+      SELECT count(*) from dbOrder;
+    </if>
+    <if test="mid != '전체' and conditionOrderStatus == '전체'">
+        SELECT count(*)
+        from dbOrder a join dbBaesong b using(orderIdx) 
+        <![CDATA[ where b.mid=#{mid} and date(orderDate) >= date(#{startJumun}) and date(orderDate) <= date(#{endJumun}) order by orderDate desc ]]>;
+    </if>
+    <if test="mid != '전체' and conditionOrderStatus != '전체'">
+        SELECT count(*)
+        from dbOrder a join dbBaesong b using(orderIdx) 
+        <![CDATA[ where b.mid=#{mid} and date(orderDate) >= date(#{startJumun}) and date(orderDate) <= date(#{endJumun}) and b.orderStatus=#{conditionOrderStatus} order by orderDate desc ]]>;
+    </if>
+  </select>
+  
+  <select id="totRecCntMyOrderCondition" resultType="int">
+    SELECT count(*) FROM dbOrder a JOIN dbBaesong b USING(orderIdx)
+	    <![CDATA[ WHERE b.mid=#{mid} AND now() <= date(date_add(orderDate, interval #{conditionDate} day)) ]]>
+  </select>
+  
+  <select id="getOrderCondition" resultType="com.spring.javawebS.vo.DbBaesongVO">
+    <!-- 
+    SELECT a.*,b.* 
+    FROM dbOrder a join dbBaesong b using(orderIdx) 
+    <![CDATA[ WHERE b.mid=#{mid} and date(orderDate) >= date(subdate(now(), INTERVAL #{conditionDate} DAY)) and date(orderDate) <= date(now()) ]]> 
+    order by orderDate desc
+    limit #{startIndexNo},#{pageSize};
+     -->
+    SELECT a.*,b.* 
+	    FROM dbOrder a JOIN dbBaesong b USING(orderIdx) 
+	    <![CDATA[ WHERE b.mid=#{mid} AND now() <= date(date_add(orderDate, interval #{conditionDate} day)) ]]>
+	    ORDER BY orderDate DESC limit #{startIndexNo},#{pageSize};
+  </select>
+  
   
 	
 	
@@ -114,6 +195,29 @@
     insert into dbOption values (default,#{vo.productIdx},#{vo.optionName},#{vo.optionPrice});
   </insert>
   
+  <insert id="dbShopCartInput">
+    insert into dbCart values (default,default,#{vo.mid},#{vo.productIdx},#{vo.productName},#{vo.mainPrice},#{vo.thumbImg},#{vo.optionIdx},#{vo.optionName},#{vo.optionPrice},#{vo.optionNum},#{vo.totalPrice});
+  </insert>
+  
+  <insert id="setDbOrder">
+    insert into dbOrder values (default,#{vo.orderIdx},#{vo.mid},#{vo.productIdx},default,#{vo.productName},#{vo.mainPrice},#{vo.thumbImg},#{vo.optionName},#{vo.optionPrice},#{vo.optionNum},#{vo.totalPrice});
+  </insert>
+  
+  <insert id="setDbBaesong">
+    insert into dbBaesong values (default,#{baesongVO.oIdx},#{baesongVO.orderIdx},#{baesongVO.orderTotalPrice},#{baesongVO.mid},#{baesongVO.name},#{baesongVO.address},#{baesongVO.tel},#{baesongVO.message},#{baesongVO.payment},#{baesongVO.payMethod},default);
+  </insert>
+  
+  
+  
+  
+  <update id="dbShopCartUpdate">
+    update dbCart set optionNum=#{vo.optionNum},totalPrice=totalPrice+#{vo.totalPrice} where productName=#{vo.productName} and optionName=#{vo.optionName};
+  </update>
+  
+  <update id="setMemberPointPlus">
+    update member2 set point = point + #{point} where mid = #{mid};
+  </update>
+
   
   
   
@@ -133,5 +237,14 @@
   <delete id="setOptionDelete">
     delete from dbOption where idx = #{idx};
   </delete>
+  
+  <delete id="dbCartDelete">
+  	delete from dbCart where idx = #{idx};
+  </delete>
+  
+  <delete id="setDbCartDeleteAll">
+    delete from dbCart where idx = #{idx};
+  </delete>
+  
 	
 </mapper>

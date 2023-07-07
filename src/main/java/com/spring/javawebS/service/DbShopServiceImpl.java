@@ -18,8 +18,12 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.spring.javawebS.dao.DbShopDAO;
+import com.spring.javawebS.vo.DbBaesongVO;
+import com.spring.javawebS.vo.DbCartVO;
 import com.spring.javawebS.vo.DbOptionVO;
+import com.spring.javawebS.vo.DbOrderVO;
 import com.spring.javawebS.vo.DbProductVO;
+import com.spring.javawebS.vo.MemberVO;
 
 @Service
 public class DbShopServiceImpl implements DbShopService {
@@ -251,6 +255,81 @@ public class DbShopServiceImpl implements DbShopService {
 	@Override
 	public void setCategorySubDelete(String categorySubCode) {
 		dbShopDAO.setCategorySubDelete(categorySubCode);
+	}
+
+	@Override
+	public DbCartVO getDbCartProductOptionSearch(String productName, String optionName, String mid) {
+		return dbShopDAO.getDbCartProductOptionSearch(productName, optionName, mid);
+	}
+
+	@Override
+	public void dbShopCartUpdate(DbCartVO vo) {
+		dbShopDAO.dbShopCartUpdate(vo);
+	}
+
+	@Override
+	public void dbShopCartInput(DbCartVO vo) {
+		dbShopDAO.dbShopCartInput(vo);
+	}
+
+	@Override
+	public List<DbCartVO> getDbCartList(String mid) {
+		return dbShopDAO.getDbCartList(mid);
+	}
+
+	@Override
+	public void dbCartDelete(int idx) {
+		dbShopDAO.dbCartDelete(idx);
+	}
+
+	@Override
+	public DbCartVO getCartIdx(int idx) {
+		return dbShopDAO.getCartIdx(idx);
+	}
+
+	@Override
+	public DbOrderVO getOrderMaxIdx() {
+		return dbShopDAO.getOrderMaxIdx();
+	}
+
+	@Override
+	public void setDbOrder(DbOrderVO vo) {
+		dbShopDAO.setDbOrder(vo);
+	}
+
+	@Override
+	public void setDbCartDeleteAll(int idx) {
+		dbShopDAO.setDbCartDeleteAll(idx);
+	}
+
+	@Override
+	public void setDbBaesong(DbBaesongVO baesongVO) {
+		dbShopDAO.setDbBaesong(baesongVO);
+	}
+
+	@Override
+	public void setMemberPointPlus(int point, String mid) {
+		dbShopDAO.setMemberPointPlus(point, mid);
+	}
+
+	@Override
+	public List<DbBaesongVO> getOrderBaesong(String orderIdx) {
+		return dbShopDAO.getOrderBaesong(orderIdx);
+	}
+
+	@Override
+	public List<DbBaesongVO> getMyOrderList(int startIndexNo, int pageSize, String mid) {
+		return dbShopDAO.getMyOrderList(startIndexNo, pageSize, mid);
+	}
+
+	@Override
+	public List<DbBaesongVO> getMyOrderStatus(int startIndexNo, int pageSize, String mid, String startJumun, String endJumun, String conditionOrderStatus) {
+		return dbShopDAO.getMyOrderStatus(startIndexNo, pageSize, mid, startJumun, endJumun, conditionOrderStatus);
+	}
+
+	@Override
+	public List<DbBaesongVO> getOrderCondition(String mid, int conditionDate, int startIndexNo, int pageSize) {
+		return dbShopDAO.getOrderCondition(mid, conditionDate, startIndexNo, pageSize);
 	}
 	
 	

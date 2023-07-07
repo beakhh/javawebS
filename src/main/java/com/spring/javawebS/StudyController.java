@@ -3,7 +3,6 @@ package com.spring.javawebS;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
-import java.awt.GraphicsEnvironment;
 import java.awt.RenderingHints;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.Rectangle2D;
@@ -33,6 +32,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
@@ -47,10 +47,13 @@ import com.spring.javawebS.common.ARIAUtil;
 import com.spring.javawebS.common.SecurityUtil;
 import com.spring.javawebS.service.MemberService;
 import com.spring.javawebS.service.StudyService;
+import com.spring.javawebS.vo.ChartVO;
+import com.spring.javawebS.vo.DbPayMentVO;
 import com.spring.javawebS.vo.KakaoAddressVO;
 import com.spring.javawebS.vo.MailVO;
 import com.spring.javawebS.vo.MemberVO;
 import com.spring.javawebS.vo.QrCodeVO;
+import com.spring.javawebS.vo.TransactionVO;
 import com.spring.javawebS.vo.UserVO;
 
 @Controller
@@ -685,4 +688,117 @@ public class StudyController {
 		if(strCaptcha.equals(session.getAttribute("CAPTCHA").toString())) return "1";
 		else return "0";
 	}
+	
+	// 썸네일 이미지 연습폼
+	@RequestMapping(value = "/thumbnail/thumbnailForm", method = RequestMethod.GET)
+	public String thumbnailFormGet() {
+		return "study/thumbnail/thumbnailForm";
+	}
+	
+	// 썸네일 이미지 생성 하기
+	@RequestMapping(value = "/thumbnail/thumbnailForm", method = RequestMethod.POST)
+	public String thumbnailFormPost(MultipartFile file) {
+		int res = studyService.thumbnailCreate(file);
+		if(res == 1) return "redirect:/message/thumbnailCreateOk";
+		else return "redirect:/message/thumbnailCreateNo";
+	}
+	
+	// 썸네일 결과 보기
+	@RequestMapping(value = "/thumbnail/thumbnailResult", method = RequestMethod.GET)
+	public String thumbnailResultGet(HttpServletRequest request, Model model) {
+		String realPath = request.getSession().getServletContext().getRealPath("/resources/data/thumbnail/");
+		String[] files = new File(realPath).list();		
+		model.addAttribute("files", files);
+		model.addAttribute("cnt", (files.length / 2));
+		
+		return "study/thumbnail/thumbnailResult";
+	}
+	
+	// 썸네일 이미지 삭제하기
+	@ResponseBody
+	@RequestMapping(value = "/thumbnail/thumbnailDelete", method = RequestMethod.POST)
+	public String thumbnailDeletePost(HttpServletRequest request, String file, String thumbnailFile) {
+//		System.out.println("file : " + file);
+//		System.out.println("thumbnailFile : " + thumbnailFile);
+		String realPath = request.getSession().getServletContext().getRealPath("/resources/data/thumbnail/");
+		new File(realPath + file).delete();		
+		new File(realPath + thumbnailFile).delete();		
+		
+		return "1";
+	}
+	
+	// 결제할 내역을 입력할 창 호출하기
+	@RequestMapping(value="/merchant/merchant", method=RequestMethod.GET)
+	public String merchantGet() {
+		return "study/merchant/merchant";
+	}
+	
+	// 결제창 호출하기
+	@RequestMapping(value="/merchant/merchant", method=RequestMethod.POST)
+	public String merchantPost(DbPayMentVO vo, Model model, HttpSession session) {
+		session.setAttribute("sDbPayMentVO", vo);
+		model.addAttribute("vo", vo);
+		return "study/merchant/sample";
+	}
+	
+	// 결제할 내역을 입력할 창 호출하기
+	@RequestMapping(value="/merchant/merchantOk", method=RequestMethod.GET)
+	public String merchantOkGet(Model model, HttpSession session) {
+		DbPayMentVO vo = (DbPayMentVO) session.getAttribute("sDbPayMentVO");
+		model.addAttribute("vo", vo);
+		session.removeAttribute("sDbPayMentVO");
+		return "study/merchant/merchantOk";
+	}
+	
+	// 트랜잭션 연습폼 호출
+	@RequestMapping(value="/transaction/transaction", method=RequestMethod.GET)
+	public String transactionGet(Model model, HttpSession session) {
+		return "study/transaction/transaction";
+	}
+	
+	// 트랜잭션 개별 입력처리 
+	@Transactional
+	@RequestMapping(value="/transaction/input1", method=RequestMethod.GET)
+	public String input1Get(TransactionVO vo) {
+		studyService.setTransactionUserInput1(vo);
+		studyService.setTransactionUserInput2(vo);
+		return "redirect:/message/transactionInput1Ok";
+	}
+	
+	// 트랜잭션 일괄 입력처리 
+	@RequestMapping(value="/transaction/input2", method=RequestMethod.GET)
+	public String input2Get(TransactionVO vo) {
+		studyService.setTransactionUserInput(vo);
+		// 이곳은 기타 처리가 들어가는 영역......
+		
+		return "redirect:/message/transactionInput2Ok";
+	}
+	
+	// 회원(user) 전체 리스트 보기
+	@RequestMapping(value="/transaction/transactionList", method=RequestMethod.GET)
+	public String transactionListGet(Model model,
+			@RequestParam(name="userSelect", defaultValue="user", required=false) String userSelect) {
+		List<TransactionVO> vos = studyService.setTransactionUserList(userSelect);
+		model.addAttribute("vos", vos);
+		model.addAttribute("userSelect", userSelect);
+		return "study/transaction/transactionList";
+	}
+	
+	// Google Chart 연습
+	@RequestMapping(value="/chart/chart", method=RequestMethod.GET)
+	public String chartGet(Model model,
+			@RequestParam(name="part", defaultValue="barV", required=false) String part) {
+		model.addAttribute("part", part);
+		return "study/chart/chart";
+	}
+	
+	// Google Chart 연습
+	@RequestMapping(value="/chart/chart2", method=RequestMethod.POST)
+	public String chart2Post(Model model, ChartVO vo) {
+		model.addAttribute("vo", vo);
+		return "study/chart2/chart";
+	}
+	
+	
+	
 }

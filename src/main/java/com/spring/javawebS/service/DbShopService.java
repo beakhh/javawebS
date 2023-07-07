@@ -4,8 +4,12 @@ import java.util.List;
 
 import org.springframework.web.multipart.MultipartFile;
 
+import com.spring.javawebS.vo.DbBaesongVO;
+import com.spring.javawebS.vo.DbCartVO;
 import com.spring.javawebS.vo.DbOptionVO;
+import com.spring.javawebS.vo.DbOrderVO;
 import com.spring.javawebS.vo.DbProductVO;
+import com.spring.javawebS.vo.MemberVO;
 
 public interface DbShopService {
 
@@ -60,5 +64,35 @@ public interface DbShopService {
 	public DbProductVO getDbProductOne(String categorySubCode);
 
 	public void setCategorySubDelete(String categorySubCode);
+
+	public DbCartVO getDbCartProductOptionSearch(String productName, String optionName, String mid);
+
+	public void dbShopCartUpdate(DbCartVO vo);
+
+	public void dbShopCartInput(DbCartVO vo);
+
+	public List<DbCartVO> getDbCartList(String mid);
+
+	public void dbCartDelete(int idx);
+
+	public DbCartVO getCartIdx(int idx);
+
+	public DbOrderVO getOrderMaxIdx();
+
+	public void setDbOrder(DbOrderVO vo);
+
+	public void setDbCartDeleteAll(int idx);
+
+	public void setDbBaesong(DbBaesongVO baesongVO);
+
+	public void setMemberPointPlus(int point, String mid);
+
+	public List<DbBaesongVO> getOrderBaesong(String orderIdx);
+
+	public List<DbBaesongVO> getMyOrderList(int startIndexNo, int pageSize, String mid);
+
+	public List<DbBaesongVO> getMyOrderStatus(int startIndexNo, int pageSize, String mid, String startJumun, String endJumun, String conditionOrderStatus);
+
+	public List<DbBaesongVO> getOrderCondition(String mid, int conditionDate, int startIndexNo, int pageSize);
 
 }

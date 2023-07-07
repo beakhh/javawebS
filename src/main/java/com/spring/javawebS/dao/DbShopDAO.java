@@ -4,7 +4,10 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
 
+import com.spring.javawebS.vo.DbBaesongVO;
+import com.spring.javawebS.vo.DbCartVO;
 import com.spring.javawebS.vo.DbOptionVO;
+import com.spring.javawebS.vo.DbOrderVO;
 import com.spring.javawebS.vo.DbProductVO;
 
 public interface DbShopDAO {
@@ -62,5 +65,33 @@ public interface DbShopDAO {
 	public DbProductVO getDbProductOne(@Param("categorySubCode") String categorySubCode);
 
 	public void setCategorySubDelete(@Param("categorySubCode") String categorySubCode);
+
+	public DbCartVO getDbCartProductOptionSearch(@Param("productName") String productName, @Param("optionName") String optionName, @Param("mid") String mid);
+
+	public void dbShopCartUpdate(@Param("vo") DbCartVO vo);
+
+	public void dbShopCartInput(@Param("vo") DbCartVO vo);
+
+	public List<DbCartVO> getDbCartList(@Param("mid") String mid);
+
+	public void dbCartDelete(@Param("idx") int idx);
+
+	public DbCartVO getCartIdx(@Param("idx") int idx);
+
+	public DbOrderVO getOrderMaxIdx();
+
+	public void setDbOrder(@Param("vo") DbOrderVO vo);
+
+	public void setDbCartDeleteAll(@Param("idx") int idx);
+
+	public void setDbBaesong(@Param("baesongVO") DbBaesongVO baesongVO);
+
+	public void setMemberPointPlus(@Param("point") int point, @Param("mid") String mid);
+
+	public List<DbBaesongVO> getOrderBaesong(@Param("orderIdx") String orderIdx);
+
+	public List<DbProductVO> getMyOrderList(@Param("startIndexNo") int startIndexNo, @Param("pageSize") int pageSize, @Param("mid") String mid);
+
+	public int totRecCnt(@Param("mid") String mid);
 
 }
