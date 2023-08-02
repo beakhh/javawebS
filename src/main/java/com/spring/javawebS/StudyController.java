@@ -792,13 +792,89 @@ public class StudyController {
 		return "study/chart/chart";
 	}
 	
-	// Google Chart 연습
-	@RequestMapping(value="/chart/chart2", method=RequestMethod.POST)
+	// Google Chart2 연습
+	@RequestMapping(value="/chart2/chart", method=RequestMethod.GET)
+	public String chart2Get(Model model) {
+		return "study/chart2/chart";
+	}
+	
+	// Google Chart2 연습
+	@RequestMapping(value="/chart2/chart2", method=RequestMethod.POST)
 	public String chart2Post(Model model, ChartVO vo) {
+		System.out.println("vo : " + vo);
 		model.addAttribute("vo", vo);
 		return "study/chart2/chart";
 	}
 	
+	// 최근 방문자수 차트로 표시하기
+	@RequestMapping(value="/chart2/chart2Recently", method=RequestMethod.GET)
+	public String googleChart2RecentlyGet(Model model,
+			@RequestParam(name="part", defaultValue="line", required=false) String part) {
+		System.out.println("part : " + part);
+		List<ChartVO> vos = null;
+		if(part.equals("lineChartVisitCount")) {
+			vos = studyService.getRecentlyVisitCount(1);
+			String[] visitDates = new String[7];
+			int[] visitDays = new int[7];	// line차트는 x축과 y축이 모두 숫자가 와야하기에 날짜중에서 '일'만 담기로 한다.(정수타입으로)
+			int[] visitCounts = new int[7];
+			
+			for(int i=0; i<7; i++) {
+				visitDates[i] = vos.get(i).getVisitDate().replaceAll("-", "").substring(4);
+				visitDays[i] = Integer.parseInt(vos.get(i).getVisitDate().toString().substring(8));
+				visitCounts[i] = vos.get(i).getVisitCount();
+			}
+			
+			model.addAttribute("title", "최근 7일간 방문횟수");
+			model.addAttribute("subTitle", "최근 7일동안 방문한 해당일자 방문자 총수를 표시합니다.");
+			model.addAttribute("visitCount", "방문횟수");
+			model.addAttribute("legend", "일일 방문 총횟수");
+			model.addAttribute("topTitle", "방문날짜");
+			model.addAttribute("xTitle", "방문날짜");
+			model.addAttribute("part", part);
+			model.addAttribute("visitDates", visitDates);
+			model.addAttribute("visitDays", visitDays);
+			model.addAttribute("visitCounts", visitCounts);
+		}
+		
+		return "study/chart2/chart";
+	}
 	
+	// 많이찾은 방문자 7명 차트로 표시하기
+	@RequestMapping(value="/chart2/chart2Recently2", method=RequestMethod.GET)
+	public String googleChart2Recently2Get(Model model,
+			@RequestParam(name="part", defaultValue="line", required=false) String part) {
+		List<ChartVO> vos = null;
+		if(part.equals("lineChartVisitCount2")) {
+			vos = studyService.getRecentlyVisitCount(2);
+			String[] visitDates = new String[7];
+			int[] visitDays = new int[7];	// line차트는 x축과 y축이 모두 숫자가 와야하기에 날짜중에서 '일'만 담기로 한다.(정수타입으로)
+			int[] visitCounts = new int[7];
+			for(int i=0; i<7; i++) {
+				visitDates[i] = vos.get(i).getVisitDate().toString();
+				visitDays[i] = 7 - i;
+				visitCounts[i] = vos.get(i).getVisitCount();
+			}
+			
+			model.addAttribute("title", "많이 방문한 회원 7명");
+			model.addAttribute("subTitle", "가장 많이 방문한 방문자 7인을 표시합니다.");
+			model.addAttribute("visitCount", "방문횟수");
+			model.addAttribute("legend", "방문 총횟수");
+			model.addAttribute("topTitle", "회원아이디");
+			model.addAttribute("xTitle", "회원아이디");
+			model.addAttribute("part", part);
+			model.addAttribute("visitDates", visitDates);
+			model.addAttribute("visitDays", visitDays);
+			model.addAttribute("visitCounts", visitCounts);
+		}
+		
+		return "study/chart2/chart";
+	}
+	
+	// 달력내역 가져오기
+	@RequestMapping(value = "/calendar/calendar", method = RequestMethod.GET)
+	public String calendarGet() {
+		studyService.getCalendar();
+		return "study/calendar/calendar";
+	}
 	
 }

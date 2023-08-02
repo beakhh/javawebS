@@ -15,17 +15,17 @@
 
     function drawChart() {
       var data = google.visualization.arrayToDataTable([
-        ['Year', 'Sales', 'Expenses', 'Profit'],
-        ['2014', 1000, 400, 200],
-        ['2015', 1170, 460, 250],
-        ['2016', 660, 1120, 300],
-        ['2017', 1030, 540, 350]
+        ['Year', '${vo.legend1}', '${vo.legend2}', '${vo.legend3}'],
+        ['${vo.x1}', ${vo.x1Value1}, ${vo.x1Value2}, ${vo.x1Value3}],
+        ['${vo.x2}', ${vo.x2Value1}, ${vo.x2Value2}, ${vo.x2Value3}],
+        ['${vo.x3}', ${vo.x3Value1}, ${vo.x3Value2}, ${vo.x3Value3}],
+        ['${vo.x4}', ${vo.x4Value1}, ${vo.x4Value2}, ${vo.x4Value3}]
       ]);
 
       var options = {
         chart: {
-          title: 'Company Performance',
-          subtitle: 'Sales, Expenses, and Profit: 2014-2017',
+          title: '${vo.title}',
+          subtitle: '${vo.subTitle}',
         }
       };
 

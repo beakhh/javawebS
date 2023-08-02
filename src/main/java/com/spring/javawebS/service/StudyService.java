@@ -60,4 +60,6 @@ public interface StudyService {
 
 	public List<ChartVO> getRecentlyVisitCount(int i);
 
+	public void getCalendar();
+
 }

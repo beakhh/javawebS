@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import com.spring.javawebS.pagination.PageProcess;
 import com.spring.javawebS.pagination.PageVO;
@@ -33,6 +34,7 @@ import com.spring.javawebS.vo.DbOptionVO;
 import com.spring.javawebS.vo.DbOrderVO;
 import com.spring.javawebS.vo.DbPayMentVO;
 import com.spring.javawebS.vo.DbProductVO;
+import com.spring.javawebS.vo.MainImageVO;
 import com.spring.javawebS.vo.MemberVO;
 
 @Controller
@@ -309,9 +311,48 @@ public class DbShopController {
 	}
 	
 	// 주문관리.......
+  // 관리자에서 관리자가 주문 확인하기
+	@RequestMapping(value="/adminOrderStatus")
+	public String dbOrderProcessGet(Model model,
+    @RequestParam(name="startJumun", defaultValue="", required=false) String startJumun,
+    @RequestParam(name="endJumun", defaultValue="", required=false) String endJumun,
+    @RequestParam(name="orderStatus", defaultValue="전체", required=false) String orderStatus,
+    @RequestParam(name="pag", defaultValue="1", required=false) int pag,
+    @RequestParam(name="pageSize", defaultValue="5", required=false) int pageSize) {
+
+		List<DbBaesongVO> vos = null;
+		PageVO pageVO = null;
+		String strNow = "";
+		if(startJumun.equals("")) {
+			Date now = new Date();
+	    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+	    strNow = sdf.format(now);
+	    
+	    startJumun = strNow;
+	    endJumun = strNow;
+		}
+    
+    String strOrderStatus = startJumun + "@" + endJumun + "@" + orderStatus;
+    pageVO = pageProcess.totRecCnt(pag, pageSize, "adminDbOrderProcess", "", strOrderStatus);
+
+		vos = dbShopService.getAdminOrderStatus(pageVO.getStartIndexNo(), pageSize, startJumun, endJumun, orderStatus);
 	
+	  model.addAttribute("startJumun", startJumun);
+	  model.addAttribute("endJumun", endJumun);
+	  model.addAttribute("orderStatus", orderStatus);
+	  model.addAttribute("vos", vos);
+	  model.addAttribute("pageVO", pageVO);
 	
+	  return "admin/dbShop/dbOrderProcess";
+	}
 	
+	// 주문관리에서, 관리자가 주문상태를 변경처리하는것
+	@ResponseBody
+	@RequestMapping(value="/goodsStatus", method=RequestMethod.POST)
+	public String goodsStatusGet(String orderIdx, String orderStatus) {
+		dbShopService.setOrderStatusUpdate(orderIdx, orderStatus);
+		return "";
+	}  
 	
 	
 	
@@ -495,6 +536,14 @@ public class DbShopController {
 		baesongVO.setAddress(payMentVO.getBuyer_addr());
 		baesongVO.setTel(payMentVO.getBuyer_tel());
 		
+		// 총주문금액이 5만원 이하면, 배송비를 2500원 추가시켜준다.
+		int totalBaesongOrder = 0;
+		for(int i=0; i<orderVOS.size(); i++) {
+			totalBaesongOrder += orderVOS.get(i).getTotalPrice();
+		}
+		if(totalBaesongOrder < 50000) baesongVO.setOrderTotalPrice(totalBaesongOrder + 2500);
+		else baesongVO.setOrderTotalPrice(totalBaesongOrder);
+		
 		dbShopService.setDbBaesong(baesongVO);  // 배송내용을 배송테이블(dbBaesong)에 저장
 		dbShopService.setMemberPointPlus((int)(baesongVO.getOrderTotalPrice() * 0.01), orderVOS.get(0).getMid());	// 회원테이블에 포인트 적립하기(1%)
 		
@@ -517,6 +566,11 @@ public class DbShopController {
 		List<DbOrderVO> orderVOS = (List<DbOrderVO>) session.getAttribute("sOrderVOS");
 		model.addAttribute("orderVOS", orderVOS);
 		session.removeAttribute("sOrderVOS");
+		
+		// 구매한 총 금액(여러개의 상품이라도 주문번호는 1개)은 배송테이블에 있기에 주문고유번호로 배송테이블에서 구매한 총 금액을 가져온다.
+		int totalBaesongOrder = dbShopService.getTotalBaesongOrder(orderVOS.get(orderVOS.size()-1).getOrderIdx());
+		model.addAttribute("totalBaesongOrder", totalBaesongOrder);
+		
 		return "dbShop/paymentResult";
 	}
 	
@@ -540,8 +594,12 @@ public class DbShopController {
 	// 현재 로그인 사용자가 주문내역 조회하기 폼 보여주기
 	@RequestMapping(value="/dbMyOrder", method=RequestMethod.GET)
 	public String dbMyOrderGet(HttpServletRequest request, HttpSession session, Model model,
+			String startJumun, 
+			String endJumun, 
 			@RequestParam(name="pag", defaultValue="1", required=false) int pag,
-			@RequestParam(name="pageSize", defaultValue="5", required=false) int pageSize) {
+			@RequestParam(name="pageSize", defaultValue="5", required=false) int pageSize,
+  	  @RequestParam(name="conditionOrderStatus", defaultValue="전체", required=false) String conditionOrderStatus) {
+		
 		String mid = (String) session.getAttribute("sMid");
 		int level = (int) session.getAttribute("sLevel");
 		if(level == 0) mid = "전체";
@@ -551,8 +609,14 @@ public class DbShopController {
 		// 오늘 구매한 내역을 초기화면에 보여준다.
 //		List<DbProductVO> vos = dbShopService.getMyOrderList(pageVO.getStartIndexNo(), pageSize, mid);
 		List<DbBaesongVO> vos = dbShopService.getMyOrderList(pageVO.getStartIndexNo(), pageSize, mid);
-		model.addAttribute("vos", vos);
-		model.addAttribute("pageVO",pageVO);
+//		model.addAttribute("vos", vos);
+//		model.addAttribute("pageVO",pageVO);
+		
+		model.addAttribute("vos", vos);				
+		model.addAttribute("startJumun", startJumun);
+		model.addAttribute("endJumun", endJumun);
+		model.addAttribute("conditionOrderStatus", conditionOrderStatus);
+		model.addAttribute("pageVO", pageVO);
 		
 		return "dbShop/dbMyOrder";
 	}
@@ -641,6 +705,57 @@ public class DbShopController {
 		model.addAttribute("pageVO", pageVO);
 		
 		return "dbShop/dbMyOrder";
+	}
+	
+	// 관리자 상품등록시 메인 이미지만 따로 관리하기(등록된 메인 이미지만 보여주는 화면)
+	@RequestMapping(value = "/mainImageList", method = RequestMethod.GET)
+	public String mainImageListGet(Model model,
+			@RequestParam(name="productCode",defaultValue = "", required = false) String productCode) {
+		List<MainImageVO> mainImageVOS = dbShopService.getMainImageSearch(productCode);
+		model.addAttribute("mainImageVOS", mainImageVOS);
+		
+		List<MainImageVO> vos = dbShopService.getMainImageList();
+		model.addAttribute("vos", vos);
+		
+		model.addAttribute("productCode", productCode);
+		model.addAttribute("productName", mainImageVOS.get(0).getProductName());
+//		System.out.println("vo : " + vo);
+//		System.out.println("vos : " + vos);
+		return "admin/dbShop/mainImageList";
+	}
+	
+	// 관리자 상품등록시 메인 이미지만 별도로 등록하기폼 호출
+	@RequestMapping(value = "/mainImageInput", method = RequestMethod.GET)
+	public String mainImageInputGet(Model model) {
+		List<DbProductVO> mainVOS = dbShopService.getCategoryMain();  // 대분류리스트
+		List<DbProductVO> middleVOS = dbShopService.getCategoryMiddle();// 중분류리스트
+		List<DbProductVO> subVOS = dbShopService.getCategorySub();// 소분류리스트
+	
+		model.addAttribute("mainVOS", mainVOS);
+		model.addAttribute("middleVOS", middleVOS);
+		model.addAttribute("subVOS", subVOS);
+		
+		return "admin/dbShop/mainImageInput";
+	}
+	
+	// 메인 상품 메인이미지 저장처리
+	@RequestMapping(value="/mainImageInput", method = RequestMethod.POST)
+	public String mainImagePost(MainImageVO vo, MultipartHttpServletRequest fName) {
+		int res = dbShopService.mainImageInput(vo, fName);
+		//System.out.println("res : " + res);
+		
+		if(res == 1) return "redirect:/message/mainImageInputOk";
+		else return "redirect:/message/mainImageInputNo";
+	}
+	
+	// 메인 상품 메인이미지 삭제처리
+	@RequestMapping(value="/mainImageDelete", method = RequestMethod.GET)
+	public String mainImageGet(String productCode) {
+		int res = dbShopService.mainImageDelete(productCode);
+		//System.out.println("res : " + res);
+		
+		if(res == 1) return "1";
+		else return "0";
 	}
 	
 }

@@ -18,16 +18,14 @@
     'use strict';
     
     function pwdCheck() {
-    	let pwd = '';
-    	<c:if test="${!empty sPwdFlag}">pwd = $("#pwd").val();</c:if>
     	let newPwd = $("#newPwd").val();
     	let rePwd = $("#rePwd").val();
     	
-    	if(pwd == "" || newPwd == "" || rePwd == "") {
-    		alert("비밀번호를 입력하세요");
-    		$("#pwd").focus();
+    	if(newPwd == "" || rePwd == "") {
+    		alert("새 비밀번호를 입력하세요");
+    		$("#newPwd").focus();
     	}
-    	else if(pwd != rePwd) {
+    	else if(newPwd != rePwd) {
     		alert("확인비밀번호가 일치하지 않습니다.");
     		$("#rePwd").focus();
     	}
@@ -46,12 +44,6 @@
   <p>아이디와 이메일주소를 입력후 메일로 임시비밀번호를 발급 받으세요</p>
   <form name="myform" method="post">
     <table class="table table-bordered">
-      <c:if test="${!empty sPwdFlag}">
-        <tr>
-	        <th>기존비밀번호</th>
-	        <td><input type="password" name="pwd" id="pwd" class="form-control" required /></td>
-	      </tr>
-      </c:if>
       <tr>
         <th>새비밀번호</th>
         <td><input type="password" name="newPwd" id="newPwd" class="form-control" required /></td>

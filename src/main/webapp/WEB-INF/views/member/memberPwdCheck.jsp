@@ -17,24 +17,6 @@
   <script>
     'use strict';
     
-    function pwdCheck() {
-    	let pwd = '';
-    	<c:if test="${!empty sPwdFlag}">pwd = $("#pwd").val();</c:if>
-    	let newPwd = $("#newPwd").val();
-    	let rePwd = $("#rePwd").val();
-    	
-    	if(pwd == "" || newPwd == "" || rePwd == "") {
-    		alert("비밀번호를 입력하세요");
-    		$("#pwd").focus();
-    	}
-    	else if(pwd != rePwd) {
-    		alert("확인비밀번호가 일치하지 않습니다.");
-    		$("#rePwd").focus();
-    	}
-    	else {
-    		myform.submit();
-    	}
-    }
   </script>
 </head>
 <body>
@@ -45,13 +27,13 @@
   <h2>비밀번호 확인</h2>
   <form name="myform" method="post">
     <table class="table table-bordered">
-        <tr>
-	        <th>비밀번호</th>
-	        <td><input type="password" name="pwd" id="pwd" class="form-control" required /></td>
-	      </tr>
+      <tr>
+        <th>비밀번호</th>
+        <td><input type="password" name="pwd" id="pwd" class="form-control" required autofocus /></td>
+      </tr>
       <tr>
         <td colspan="2" class="text-center">
-          <input type="submit" value="회원 정보 확인" class="btn btn-success" />
+          <input type="submit" value="회원정보확인" class="btn btn-success" />
           <input type="reset" value="다시입력" class="btn btn-warning" />
           <input type="button" value="돌아가기" onclick="location.href='${ctp}/member/memberMain';" class="btn btn-secondary" />
         </td>

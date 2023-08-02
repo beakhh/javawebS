@@ -3,7 +3,6 @@ package com.spring.javawebS;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -12,9 +11,8 @@ import java.util.Locale;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -64,4 +62,11 @@ public class HomeController {
 		out.flush();		
 		fos.close();
 	}
+	
+	@RequestMapping(value = "/webSocket", method = RequestMethod.GET)
+	public String webSocketGet(HttpServletRequest req, HttpServletResponse resp, HttpSession session) {
+		return "webSocket/webSocket";
+	}
+	
+	
 }
